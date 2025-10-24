@@ -2,8 +2,8 @@
 
 **Status**: IN PROGRESS
 **Date Started**: 2025-10-24
-**Current Progress**: 50% (8/16 tasks complete)
-**Last Commit**: 88f1a95 (Image processing utilities)
+**Current Progress**: 56% (9/16 tasks complete)
+**Last Commit**: NEW (Xenium two-tier architecture)
 
 ---
 
@@ -137,6 +137,41 @@
 - Post-processing with morphological operations
 
 **Tests**: 21 unit tests, all passing ✅
+
+---
+
+### ✅ 1.10a - Implement Xenium Two-Tier Architecture
+**Status**: COMPLETE
+**Date Completed**: 2025-10-24
+**Files Modified**:
+- `src/core/xenium_data.py` - Enhanced with two-tier support (526 lines)
+- `tests/test_core_data.py` - Added 4 tier-specific tests
+
+**Key Features**:
+- **Tier 1 (Minimal)**: Image-only workflow with intensity-based masks
+- **Tier 2 (Enhanced)**: Full output with cells, boundaries, transcripts, genes
+- Automatic tier detection based on available files
+- Graceful degradation when Tier 2 data unavailable
+- Polygon-based mask generation for Tier 2
+- Accessor methods for all Tier 2 data types
+- Comprehensive tier information API
+
+**New Methods**:
+- `_detect_tier()` - Automatic tier detection
+- `_load_cells_data()`, `_load_boundaries_data()`, `_load_transcripts_data()`
+- `_load_gene_panel()`, `_load_metrics()`
+- `get_cells_data()`, `get_cell_boundaries()`, `get_nucleus_boundaries()`
+- `get_transcripts()`, `get_gene_panel()`, `get_genes()`, `get_metrics()`
+- `get_tier_info()` - Tier information retrieval
+- `_generate_intensity_mask()`, `_generate_polygon_mask()`
+
+**Tests**: 4 new tests + 16 existing = 20 total, all passing ✅
+- test_xenium_tier1_detection
+- test_xenium_tier2_detection
+- test_xenium_tier_info
+- test_xenium_auto_mask_selection
+
+**Documentation**: `Planning/XENIUM_TWO_TIER_ARCHITECTURE.md`
 
 ---
 
