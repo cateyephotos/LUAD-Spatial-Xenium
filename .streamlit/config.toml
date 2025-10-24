@@ -1,0 +1,50 @@
+# Streamlit Configuration
+# Reference: Planning/STREAMLIT_TECHNICAL_GUIDELINES.md - Deployment Considerations
+
+[client]
+# Show error details in development
+showErrorDetails = true
+toolbarMode = "developer"
+
+[logger]
+# Logging level
+level = "info"
+
+[server]
+# Maximum upload size (MB)
+maxUploadSize = 500
+
+# Enable CSRF protection
+enableXsrfProtection = true
+
+# Port
+port = 8501
+
+# Headless mode
+headless = false
+
+# Run on localhost only
+runOnSave = true
+
+[theme]
+# Color scheme
+primaryColor = "#1f77b4"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#262730"
+font = "sans serif"
+
+[browser]
+# Browser configuration
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[deprecation]
+# Disable deprecation warnings
+showPyplotGlobalUse = false
+showfileUploaderEncoding = false
+
+[client.toolbarMode]
+# Toolbar mode
+mode = "developer"
+
