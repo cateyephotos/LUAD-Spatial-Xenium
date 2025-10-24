@@ -2,7 +2,8 @@
 
 **Status**: IN PROGRESS
 **Date Started**: 2025-10-24
-**Current Progress**: 37.5% (6/16 tasks complete)
+**Current Progress**: 50% (8/16 tasks complete)
+**Last Commit**: 88f1a95 (Image processing utilities)
 
 ---
 
@@ -115,12 +116,31 @@
 
 ---
 
-## In Progress Tasks
+### ✅ 1.6 - Create Image Processing Utilities
+**Status**: COMPLETE
+**Files Created**:
+- `src/processors/__init__.py` - Module initialization
+- `src/processors/image_processor.py` - Core image operations (200 lines)
+- `src/processors/circle_detector.py` - Hough circle detection (180 lines)
+- `src/processors/mask_generator.py` - Mask generation (150 lines)
+- `tests/test_processors.py` - 21 unit tests
 
-### ⏳ 1.6 - Create Image Processing Utilities
-**Status**: NOT STARTED
-**Description**: Implement core image processing functions
-**Estimated Duration**: 2-3 hours
+**Key Features**:
+- Binarization (binary, Otsu, adaptive methods)
+- Morphological operations (open, close, dilate, erode, gradient)
+- Contour detection with area filtering
+- Image normalization (uint8, uint16, uint32)
+- Geometric transforms (resize, rotate, shift)
+- IoU calculation for mask comparison
+- Hough circle detection for Visium fiducials
+- Multiple mask generation strategies (contour, intensity, adaptive, Visium-specific)
+- Post-processing with morphological operations
+
+**Tests**: 21 unit tests, all passing ✅
+
+---
+
+## In Progress Tasks
 
 ### ⏳ 1.7 - Implement Mask Generation Pipeline
 **Status**: NOT STARTED
@@ -151,10 +171,11 @@
 
 ## Code Statistics
 
-**Files Created**: 10
-**Lines of Code**: ~1,500
+**Files Created**: 14
+**Lines of Code**: ~2,400
 **Test Coverage**: 95%+
-**All Tests Passing**: ✅ YES
+**All Tests Passing**: ✅ YES (37 tests)
+**Commits**: 2 (49b9978, 88f1a95)
 
 ---
 
@@ -228,6 +249,6 @@ tests/
 ---
 
 **Last Updated**: 2025-10-24
-**Progress**: 37.5% (6/16 tasks)
-**Estimated Completion**: 2025-10-31 (7 days)
+**Progress**: 50% (8/16 tasks)
+**Estimated Completion**: 2025-10-28 (4 days)
 
