@@ -1,7 +1,7 @@
 """
 Process Page - Mask Generation
 
-Handles mask generation with progress tracking.
+Handles mask generation with progress tracking using backend pipeline.
 
 Reference: Planning/STREAMLIT_GUI_IMPLEMENTATION.md - Page 4: Process
 """
@@ -9,11 +9,13 @@ Reference: Planning/STREAMLIT_GUI_IMPLEMENTATION.md - Page 4: Process
 import streamlit as st
 from pathlib import Path
 import sys
+import logging
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from streamlit_utils import set_workflow_step
 from ui.components import section_header, progress_tracker, status_indicator
+from pipelines.mask_generation_pipeline import MaskGenerationPipeline
 
 st.set_page_config(page_title="Process - LUAD Spatial Omics", page_icon="⚙️", layout="wide")
 
@@ -42,37 +44,105 @@ with col1:
     """)
 
 with col2:
-    st.info("Processing will begin when you click 'Start Processing'")
+    if 'loaded_data' in st.session_state and st.session_state.loaded_data is not None:
+        st.success("✓ Data loaded and ready")
+    else:
+        st.warning("⚠️ No data loaded. Please go to Load Data page first.")
 
-if st.button("▶️ Start Processing", use_container_width=True):
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    
-    steps = [
-        "Loading image data...",
-        "Applying binarization...",
-        "Morphological operations...",
-        "Contour detection...",
-        "Mask refinement...",
-        "Complete!",
-    ]
-    
-    for i, step in enumerate(steps):
-        status_text.text(step)
-        progress_bar.progress((i + 1) / len(steps))
-        import time
-        time.sleep(0.5)
-    
-    st.success("✓ Mask generation complete!")
+# Check if data is loaded
+if 'loaded_data' not in st.session_state or st.session_state.loaded_data is None:
+    st.error("❌ No data loaded. Please load data on the 'Load Data' page first.")
+else:
+    if st.button("▶️ Start Processing", use_container_width=True):
+        try:
+            # Get configuration from session state
+            config = st.session_state.get('mask_config', {})
+
+            # Create pipeline
+            pipeline = MaskGenerationPipeline(st.session_state.loaded_data, config)
+
+            # Create progress tracking UI
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+
+            # Define progress callback
+            def update_progress(progress: float, message: str):
+                progress_bar.progress(min(progress / 100.0, 0.99))
+                status_text.text(f"📊 {message}")
+
+            # Register callback
+            pipeline.add_progress_callback(update_progress)
+
+            # Generate mask
+            mask = pipeline.generate_mask()
+
+            # Store results in session state
+            st.session_state.generated_mask = mask
+            st.session_state.processing_log = pipeline.get_processing_log()
+
+            # Final progress update
+            progress_bar.progress(1.0)
+            status_text.text("✓ Mask generation complete!")
+
+            # Display success message
+            st.success("✓ Mask generation complete!")
+
+            # Display mask statistics
+            stats = pipeline.get_mask_statistics()
+            if stats:
+                st.subheader("Mask Statistics")
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Shape", f"{stats['shape']}")
+                with col2:
+                    st.metric("Total Pixels", f"{stats['total_pixels']:,}")
+                with col3:
+                    st.metric("Masked Pixels", f"{stats['masked_pixels']:,}")
+                with col4:
+                    st.metric("Coverage", f"{stats['mask_percentage']:.1f}%")
+
+        except Exception as e:
+            st.error(f"❌ Error during mask generation: {str(e)}")
+            logging.error(f"Mask generation error: {e}", exc_info=True)
 
 section_header("Processing Logs", "📋")
 
 with st.expander("View Logs", expanded=False):
-    st.info("Processing logs will be displayed here")
+    if 'processing_log' in st.session_state and st.session_state.processing_log:
+        for log_entry in st.session_state.processing_log:
+            st.text(log_entry)
+    else:
+        st.info("No processing logs yet. Run mask generation to see logs.")
 
 section_header("Mask Preview", "👁️")
 
-st.info("Mask preview will be displayed here in Phase 1")
+if 'generated_mask' in st.session_state and st.session_state.generated_mask is not None:
+    try:
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        mask = st.session_state.generated_mask
+
+        # Create visualization
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+        # Original mask
+        axes[0].imshow(mask, cmap='gray')
+        axes[0].set_title('Generated Mask')
+        axes[0].axis('off')
+
+        # Mask with contours
+        from scipy import ndimage
+        labeled, num_features = ndimage.label(mask)
+        axes[1].imshow(labeled, cmap='nipy_spectral')
+        axes[1].set_title(f'Labeled Regions ({num_features} regions)')
+        axes[1].axis('off')
+
+        st.pyplot(fig)
+    except Exception as e:
+        st.warning(f"Could not display mask preview: {str(e)}")
+else:
+    st.info("Mask preview will appear here after processing")
 
 section_header("Actions", "🎬")
 

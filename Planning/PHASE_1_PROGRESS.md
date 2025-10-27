@@ -2,8 +2,8 @@
 
 **Status**: IN PROGRESS
 **Date Started**: 2025-10-24
-**Current Progress**: 56% (9/16 tasks complete)
-**Last Commit**: NEW (Xenium two-tier architecture)
+**Current Progress**: 75% (12/16 tasks complete)
+**Last Commit**: NEW (GUI Integration)
 
 ---
 
@@ -175,22 +175,126 @@
 
 ---
 
+### ✅ 1.7 - Implement Mask Generation Pipeline
+**Status**: COMPLETE
+**Date Completed**: 2025-10-24
+**Files Created**:
+- `src/pipelines/__init__.py` - Module initialization
+- `src/pipelines/mask_generation_pipeline.py` - Main pipeline class (200 lines)
+- `tests/test_mask_generation_pipeline.py` - Comprehensive tests (300 lines)
+
+**Files Modified**:
+- `src/pages/04_Process.py` - Integrated backend pipeline with progress tracking
+
+**Key Features**:
+- Format-specific mask generation (Xenium Tier 1/2, Visium, PhenoCycler, OME-TIFF)
+- Progress tracking with callbacks
+- Comprehensive error handling
+- Mask statistics calculation
+- Processing log tracking
+- GUI integration with real-time updates
+
+**New Methods**:
+- `generate_mask()` - Main pipeline execution
+- `_generate_xenium_mask()` - Xenium-specific (auto Tier 1/2)
+- `_generate_visium_mask()` - Visium circle detection
+- `_generate_phenocycler_mask()` - PhenoCycler intensity
+- `_generate_ometiff_mask()` - OME-TIFF adaptive
+- `add_progress_callback()` - Register progress callbacks
+- `get_mask_statistics()` - Mask analysis
+- `get_processing_log()` - Log retrieval
+
+**Tests**: 20 comprehensive tests covering:
+- Pipeline initialization
+- All data formats
+- Error handling
+- Progress tracking
+- Mask statistics
+- Configuration management
+
+**GUI Integration**:
+- Process page now uses real backend
+- Progress bar with status updates
+- Mask statistics display
+- Processing logs viewer
+- Mask preview with labeled regions
+- Error handling with user-friendly messages
+
+---
+
+### ✅ 1.8 - Implement Image Alignment Pipeline
+**Status**: COMPLETE
+**Date Completed**: 2025-10-24
+**Files Created**:
+- `src/pipelines/image_alignment_pipeline.py` - Main pipeline class (280 lines)
+- `tests/test_image_alignment_pipeline.py` - Comprehensive tests (300 lines)
+
+**Files Modified**:
+- `src/pipelines/__init__.py` - Added ImageAlignmentPipeline export
+- `src/pages/05_Align.py` - Integrated backend pipeline with progress tracking
+
+**Key Features**:
+- Multi-format image registration (Xenium-PhenoCycler, Visium-PhenoCycler)
+- Feature detection (SIFT, ORB, AKAZE)
+- Feature matching with Lowe's ratio test
+- RANSAC-based transformation estimation
+- Affine and perspective transformations
+- Image registration and warping
+- Quality metrics calculation
+- Progress tracking with callbacks
+- Comprehensive error handling
+
+**New Methods**:
+- `detect_features()` - Feature detection in images
+- `match_features()` - Feature matching between images
+- `estimate_transformation()` - Transformation matrix estimation
+- `register_images()` - Image warping and registration
+- `calculate_quality_metrics()` - Alignment quality analysis
+- `align()` - Main pipeline execution
+
+**Tests**: 20 comprehensive tests covering:
+- Pipeline initialization
+- Feature detection
+- Feature matching
+- Transformation estimation
+- Image registration
+- Quality metrics
+- Error handling
+- Multi-format alignment
+
+**GUI Integration**:
+- Align page now uses real backend
+- Feature detector selection (SIFT, ORB, AKAZE)
+- Configurable alignment parameters
+- Progress bar with status updates
+- Alignment quality metrics display
+- Transformation matrix visualization
+- Aligned image preview
+- Error handling with user feedback
+
+---
+
+### ✅ 1.11 - Integrate Backend with GUI
+**Status**: COMPLETE
+**Date Completed**: 2025-10-24
+**Files Modified**:
+- `src/pages/02_Load_Data.py` - Backend data loading (200 lines)
+- `src/pages/03_Configure.py` - Parameter management (170 lines)
+- `src/pages/06_Analyze.py` - Analysis implementation (130 lines)
+- `src/pages/07_Results.py` - Results display & export (190 lines)
+
+**Key Features**:
+- Real data loading using SpatialData factory
+- Support for loading second dataset for alignment
+- Configuration management for mask and alignment parameters
+- Correlation analysis and spatial statistics
+- Results visualization and export (PNG, CSV, TXT)
+- Workflow state persistence across pages
+- Error handling with user feedback
+
+---
+
 ## In Progress Tasks
-
-### ⏳ 1.7 - Implement Mask Generation Pipeline
-**Status**: NOT STARTED
-**Description**: Connect GUI to actual mask generation
-**Estimated Duration**: 3-4 hours
-
-### ⏳ 1.8 - Implement Image Alignment Pipeline
-**Status**: NOT STARTED
-**Description**: Connect GUI to actual image alignment
-**Estimated Duration**: 4-5 hours
-
-### ⏳ 1.11 - Integrate Backend with GUI
-**Status**: NOT STARTED
-**Description**: Connect all backend processors to Streamlit pages
-**Estimated Duration**: 4-5 hours
 
 ### ⏳ 1.12 - Phase 1 Testing and Validation
 **Status**: NOT STARTED

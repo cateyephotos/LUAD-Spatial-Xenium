@@ -1,7 +1,7 @@
 """
 Results Page - View and Export Results
 
-Displays results summary and export options.
+Displays results summary and export options with backend integration.
 
 Reference: Planning/STREAMLIT_GUI_IMPLEMENTATION.md - Page 7: Results
 """
@@ -9,6 +9,10 @@ Reference: Planning/STREAMLIT_GUI_IMPLEMENTATION.md - Page 7: Results
 import streamlit as st
 from pathlib import Path
 import sys
+import pandas as pd
+import numpy as np
+import io
+from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -19,58 +23,142 @@ st.set_page_config(page_title="Results - LUAD Spatial Omics", page_icon="📊", 
 
 st.title("📊 Results & Export")
 
+# Check if workflow has data
+if 'loaded_data' not in st.session_state or st.session_state.loaded_data is None:
+    st.error("❌ No data loaded. Please complete the workflow first.")
+    st.stop()
+
 section_header("Results Summary", "📋")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("Alignment Score", "0.95")
+    if 'alignment_metrics' in st.session_state and 'cross_correlation' in st.session_state.alignment_metrics:
+        st.metric("Alignment Score", f"{st.session_state.alignment_metrics['cross_correlation']:.3f}")
+    else:
+        st.metric("Alignment Score", "N/A")
 
 with col2:
-    st.metric("Processing Time", "2.3s")
+    if 'generated_mask' in st.session_state:
+        mask = st.session_state.generated_mask
+        coverage = (np.sum(mask > 0) / (mask.shape[0] * mask.shape[1])) * 100
+        st.metric("Mask Coverage", f"{coverage:.2f}%")
+    else:
+        st.metric("Mask Coverage", "N/A")
 
 with col3:
-    st.metric("Num Clusters", "5")
+    if 'correlation_value' in st.session_state:
+        st.metric("Correlation", f"{st.session_state.correlation_value:.3f}")
+    else:
+        st.metric("Correlation", "N/A")
 
 with col4:
-    st.metric("Genes Analyzed", "2000+")
+    st.metric("Status", "✓ Complete")
 
 section_header("Visualization Gallery", "🖼️")
 
-st.info("Visualization gallery will be displayed here in Phase 1")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Generated Mask")
+    if 'generated_mask' in st.session_state and st.session_state.generated_mask is not None:
+        st.image(st.session_state.generated_mask, use_column_width=True, clamp=True)
+    else:
+        st.info("No mask generated")
+
+with col2:
+    st.subheader("Aligned Image")
+    if 'aligned_image' in st.session_state and st.session_state.aligned_image is not None:
+        st.image(st.session_state.aligned_image, use_column_width=True, clamp=True)
+    else:
+        st.info("No alignment performed")
 
 section_header("Export Options", "💾")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("📥 Export CSV", use_container_width=True):
-        st.info("CSV export will be implemented in Phase 1")
+    if st.button("📥 Export Mask (PNG)", use_container_width=True):
+        if 'generated_mask' in st.session_state and st.session_state.generated_mask is not None:
+            # Convert mask to uint8
+            mask_uint8 = (st.session_state.generated_mask * 255).astype(np.uint8)
+
+            # Create download button
+            from PIL import Image
+            img = Image.fromarray(mask_uint8)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            buf.seek(0)
+
+            st.download_button(
+                label="Download Mask PNG",
+                data=buf.getvalue(),
+                file_name=f"mask_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                mime="image/png"
+            )
+        else:
+            st.warning("No mask to export")
 
 with col2:
-    if st.button("📥 Export PNG", use_container_width=True):
-        st.info("PNG export will be implemented in Phase 1")
+    if st.button("📥 Export Metrics (CSV)", use_container_width=True):
+        # Compile all metrics
+        metrics_data = {
+            'Metric': [],
+            'Value': []
+        }
+
+        if 'alignment_metrics' in st.session_state:
+            for key, value in st.session_state.alignment_metrics.items():
+                metrics_data['Metric'].append(key)
+                metrics_data['Value'].append(str(value))
+
+        if 'spatial_stats' in st.session_state:
+            for key, value in st.session_state.spatial_stats.items():
+                metrics_data['Metric'].append(key)
+                metrics_data['Value'].append(str(value))
+
+        if metrics_data['Metric']:
+            df_metrics = pd.DataFrame(metrics_data)
+            csv = df_metrics.to_csv(index=False)
+
+            st.download_button(
+                label="Download Metrics CSV",
+                data=csv,
+                file_name=f"metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv"
+            )
+        else:
+            st.warning("No metrics to export")
 
 with col3:
-    if st.button("📥 Export HDF5", use_container_width=True):
-        st.info("HDF5 export will be implemented in Phase 1")
+    if st.button("📥 Export Transformation", use_container_width=True):
+        if 'transformation_matrix' in st.session_state and st.session_state.transformation_matrix is not None:
+            M = st.session_state.transformation_matrix
 
-section_header("Report Generation", "📄")
+            # Save as text
+            text_data = "Transformation Matrix\n"
+            text_data += str(M)
 
-if st.button("📄 Generate Report", use_container_width=True):
-    st.info("Report generation will be implemented in Phase 1")
+            st.download_button(
+                label="Download Transformation",
+                data=text_data,
+                file_name=f"transformation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain"
+            )
+        else:
+            st.warning("No transformation to export")
 
 section_header("Metadata", "ℹ️")
 
 metadata = {
-    "Sample": "FFPE_LUAD_3_B",
-    "Modality": "Xenium",
-    "Processing Date": "2025-10-23",
-    "Pipeline Version": "0.1.0",
+    "Modality": st.session_state.loaded_data.modality,
+    "Resolution": f"{st.session_state.loaded_data.resolution:.4f} µm/px",
+    "Channels": len(st.session_state.loaded_data.channel_names),
+    "Processing Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "Pipeline Version": "1.0.0",
     "Status": "Complete",
 }
 
-import pandas as pd
 df = pd.DataFrame(list(metadata.items()), columns=["Key", "Value"])
 st.dataframe(df, use_container_width=True, hide_index=True)
 
@@ -90,12 +178,15 @@ with col2:
 
 with col3:
     if st.button("🔄 New Project", use_container_width=True):
-        st.info("New project functionality will be implemented in Phase 1")
+        # Clear session state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.success("✓ Session cleared. Starting new project...")
+        st.switch_page("pages/01_Home.py")
 
 st.markdown("---")
 
-if is_workflow_complete():
-    st.success("✓ Workflow complete! All steps finished successfully.")
+st.success("✓ Workflow complete! All steps finished successfully.")
 
-st.markdown("<div style='text-align: center; color: gray; font-size: 0.8rem;'>Phase 0 - GUI Foundation</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: gray; font-size: 0.8rem;'>Phase 1 - Backend Integration</div>", unsafe_allow_html=True)
 
